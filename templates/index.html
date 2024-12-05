@@ -1,11 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head> -->
+    <title>Camera Access</title>
+</head>
 <body>
-    this is my page 2
+    <h2>Access Camera</h2>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="startBtn">Start Camera</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera: ', err);
+            }
+        });
+    </script>
 </body>
 </html>
