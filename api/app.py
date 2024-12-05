@@ -1,61 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Access</title>
-</head>
-<body>
-    <h2>Access Camera</h2>
-    <video id="video" width="640" height="480" autoplay></video>
-    <button id="startBtn">Start Camera</button>
-    <button id="captureBtn">Capture Image</button>
-    <canvas id="canvas" style="display:none;"></canvas>
-    <img id="grayscaleImage" style="max-width: 640px;"/>
+import base64
+from io import BytesIO
+import cv2
+import numpy as np
+from PIL import Image
+from flask import jsonify
 
-    <script>
-        const video = document.getElementById('video');
-        const startBtn = document.getElementById('startBtn');
-        const captureBtn = document.getElementById('captureBtn');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const grayscaleImage = document.getElementById('grayscaleImage');
-
-        // Start the camera when the button is clicked
-        startBtn.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-            } catch (err) {
-                console.error('Error accessing camera: ', err);
-            }
-        });
-
-        // Capture the image when the button is clicked
-        captureBtn.addEventListener('click', () => {
-            // Draw the current frame from video to canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Convert the canvas image to base64
-            const imageData = canvas.toDataURL('image/png');
-            
-            // Send the captured image to the Flask server
-            fetch('/api/image_processing', {   // Note the change here
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ image: imageData }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Display the grayscale image received from the backend
-                grayscaleImage.src = data.grayscale_image;
-            })
-            .catch(err => console.error('Error processing image:', err));
-        });
-    </script>
-</body>
-</html>
+def handler(request):
+    # Get the base64 image data from the frontend
+    data = request.get_json()
+    image_data = data['image']
+    
+    # Decode the base64 image data
+    img_data = base64.b64decode(image_data.split(',')[1])
+    img = Image.open(BytesIO(img_data))
+    
+    # Convert the image to a NumPy array for OpenCV processing
+    img_np = np.array(img)
+    img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    
+    # Convert the grayscale image back to RGB for display in frontend
+    gray_image_rgb = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
+    
+    # Encode the processed image to base64
+    _, buffer = cv2.imencode('.png', gray_image_rgb)
+    gray_image_base64 = base64.b64encode(buffer).decode('utf-8')
+    
+    # Return the base64 image data to the frontend
+    return jsonify(grayscale_image=f"data:image/png;base64,{gray_image_base64}")
