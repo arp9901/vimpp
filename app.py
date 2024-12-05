@@ -1,58 +1,42 @@
-#.\env\scripts\activate
-
-from flask import Flask, render_template
+from flask import Flask, request, jsonify, render_template
+import cv2
+import numpy as np
+import base64
+from io import BytesIO
+from PIL import Image
 
 app = Flask(__name__)
 
-@app.route("/")          
+@app.route("/")
 def hello_world():
-    return 'Hello World';
-    # pass
-    # return render_template('index.html')
-    # return "Hello World!"
+    return render_template('index.html')
 
-# @app.route("/product")
-# def products():          
-#     return "This is products page!"  ##if default function i.e '@app.route("/")' is not returning anything then it will make this return as default
+@app.route("/process-image", methods=["POST"])
+def process_image():
+    # Get the base64 image data from the frontend
+    data = request.get_json()
+    image_data = data['image']
+    
+    # Decode the base64 image data
+    img_data = base64.b64decode(image_data.split(',')[1])
+    img = Image.open(BytesIO(img_data))
+    
+    # Convert the image to a NumPy array for OpenCV processing
+    img_np = np.array(img)
+    img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    
+    # Convert the grayscale image back to RGB for display in frontend
+    gray_image_rgb = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2RGB)
+    
+    # Encode the processed image to base64
+    _, buffer = cv2.imencode('.png', gray_image_rgb)
+    gray_image_base64 = base64.b64encode(buffer).decode('utf-8')
+    
+    # Return the base64 image data to the frontend
+    return jsonify(grayscale_image=f"data:image/png;base64,{gray_image_base64}")
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-# this is my file structure
-
-# now 
-# index.html
-# <!DOCTYPE html>
-# <html lang="en">
-# <head>
-#     <meta charset="UTF-8">
-#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-#     <title>Document</title>
-# </head>
-# <body>
-#     this is my page 2
-# </body>
-# </html>
-
-# app.py 
-
-# from flask import Flask, render_template
-
-# app = Flask(__name__)
-
-# @app.route("/")          
-# def hello_world():
-#     return 'Hello World';
-#     # pass
-#     # return render_template('index.html')
-#     # return "Hello World!"
-
-# # @app.route("/product")
-# # def products():          
-# #     return "This is products page!"  ##if default function i.e '@app.route("/")' is not returning anything then it will make this return as default
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
-    
-# now here i've deployed this in vercel and and made index.html as source (root) file as is in frontend now i want 
