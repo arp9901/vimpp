@@ -1,11 +1,18 @@
-import base64
-from io import BytesIO
+from flask import Flask, request, jsonify, render_template
 import cv2
 import numpy as np
+import base64
+from io import BytesIO
 from PIL import Image
-from flask import jsonify
 
-def handler(request):
+app = Flask(__name__)
+
+@app.route("/")
+def hello_world():
+    return render_template('index.html')
+
+@app.route("/process-image", methods=["POST"])
+def process_image():
     # Get the base64 image data from the frontend
     data = request.get_json()
     image_data = data['image']
@@ -30,3 +37,6 @@ def handler(request):
     
     # Return the base64 image data to the frontend
     return jsonify(grayscale_image=f"data:image/png;base64,{gray_image_base64}")
+
+if __name__ == '__main__':
+    app.run(debug=True)
