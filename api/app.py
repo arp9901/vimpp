@@ -42,7 +42,7 @@
             const imageData = canvas.toDataURL('image/png');
             
             // Send the captured image to the Flask server
-            fetch('/process-image', {
+            fetch('/api/image_processing', {   // Note the change here
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

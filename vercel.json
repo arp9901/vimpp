@@ -1,0 +1,16 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/image_processing.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/process-image",
+        "dest": "/api/image_processing.py"
+      }
+    ]
+  }
+  
