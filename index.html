@@ -3,28 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Access</title>
+    <title>Grayscale Camera Feed</title>
 </head>
 <body>
-    <h1>Camera Feed</h1>
-    <video id="video" width="640" height="480" autoplay></video>
-    <script>
-        // Check if the browser supports media devices
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            // Access the camera
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(stream) {
-                    // Set the video source to the camera feed
-                    const video = document.getElementById('video');
-                    video.srcObject = stream;
-                })
-                .catch(function(err) {
-                    console.log("Error: " + err);
-                    alert("Unable to access camera");
-                });
-        } else {
-            alert("Camera access not supported in this browser.");
-        }
-    </script>
+    <h1>Grayscale Camera Feed</h1>
+    <img id="video" width="640" height="480" src="/video_feed" alt="Grayscale Video Feed" />
 </body>
 </html>
