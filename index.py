@@ -20,13 +20,18 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def stream_video(self):
+        # Capture video from webcam
         cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            print("Error: Webcam not accessible")
+            return
+        
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
 
-            # Convert the frame to grayscale
+            # Convert to grayscale
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             gray_frame = cv2.cvtColor(gray_frame, cv2.COLOR_GRAY2BGR)  # Convert back to 3-channel image
 
@@ -41,7 +46,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(bytearray(jpeg))
             self.wfile.write(b'\r\n\r\n')
 
-            time.sleep(0.05)  # Control frame rate
+            time.sleep(0.05)  # Control frame rate (20 FPS)
 
         cap.release()
 
