@@ -5,12 +5,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
+            # Serve the HTML page
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             with open("index.html", "r") as file:
                 self.wfile.write(file.read().encode('utf-8'))
         elif self.path == '/video_feed':
+            # Start MJPEG stream
             self.send_response(200)
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
             self.end_headers()
@@ -30,7 +32,7 @@ class handler(BaseHTTPRequestHandler):
 
             # Convert the frame to grayscale
             gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            gray_frame = cv2.cvtColor(gray_frame, cv2.COLOR_GRAY2BGR)  # Convert back to 3-channel
+            gray_frame = cv2.cvtColor(gray_frame, cv2.COLOR_GRAY2BGR)  # Convert back to 3-channel image
 
             # Encode the frame as JPEG
             ret, jpeg = cv2.imencode('.jpg', gray_frame)
@@ -43,7 +45,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(bytearray(jpeg))
             self.wfile.write(b'\r\n\r\n')
 
-            time.sleep(0.05)  # Slight delay to control frame rate
+            time.sleep(0.05)  # Control frame rate (20 FPS)
 
         cap.release()
 
