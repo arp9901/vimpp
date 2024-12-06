@@ -5,14 +5,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
-            # Serve the HTML page
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             with open("index.html", "r") as file:
                 self.wfile.write(file.read().encode('utf-8'))
         elif self.path == '/video_feed':
-            # Start MJPEG stream
             self.send_response(200)
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
             self.end_headers()
@@ -22,9 +20,7 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def stream_video(self):
-        # Open the webcam
         cap = cv2.VideoCapture(0)
-        
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -45,7 +41,7 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(bytearray(jpeg))
             self.wfile.write(b'\r\n\r\n')
 
-            time.sleep(0.05)  # Control frame rate (20 FPS)
+            time.sleep(0.05)  # Control frame rate
 
         cap.release()
 
